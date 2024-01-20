@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Margaret Foster" />
+
+<meta name="date" content="2024-01-20" />
+
+<title>IRT-M Vignette</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">IRT-M Vignette</h1>
+<h4 class="author">Margaret Foster</h4>
+<h4 class="date">2024-01-20</h4>
+
+
+
+<p>In this document we narratively walk through use of the IRT-M
+package. Although the IRT-M framework is case agnostic, here we focus on
+a single use case in which a hypothetical research team is interested in
+seeking empirical support for the hypothesis that anti-immigration
+attitudes in Europe are associated with perceptions of cultural,
+economic, and security threats. This example illustrates one of the
+strengths of the IRT-M model; namely the (very common) situation in
+which researchers have a theoretical question and related data that does
+not directly address the substantive question of interest. In this case,
+we work through a research question derived from the literature on
+European attitudes towards immigration. The threat response hypothesis
+is supported by the literature~ but was not a specific focus of the
+2020-2021 Eurobarometer wave. Consequentially, the survey did not
+directly as questions about the three threat dimensions of interest.
+However, the survey contained several questions adjacent to threat
+perception. We can use these questions to build an M-Matrix and estimate
+latent threat dimensions.</p>
+<p>Regardless of the use case, there are three steps to preparing data
+for the IRT-M Package:</p>
+<ul>
+<li>First, create a key for how you expect your theory to interact with
+the data.</li>
+<li>Next, format the data so that it can be parsed by the sampler.</li>
+<li>Third, create anchor points for the resulting scale.</li>
+</ul>
+<div id="formatting-the-observed-data" class="section level2">
+<h2>Formatting the Observed Data</h2>
+<p>Formatting the Data</p>
+<p>IRT-M requires converting categorical variables into a numeric format
+with one response loaded into each input object (aka: question). The
+most straightforward way to do this is to use a library, such as
+<code>fastDummies</code> to expand the entire instrument into one-hot or
+binary encoding. This is also a good opportunity to export an empty
+data-frame with the list of question codes, to code the M-Code object.
+Doing so reduces the likelihood of formatting slippages that are tedious
+to fix. We have also found it to be worthwhile to insert column with
+human-readable notes next to the question codes. This step adds some
+overhead, but— much like commenting code in general— is invaluable for
+debugging and analysis.</p>
+</div>
+<div id="creating-the-m-matrix" class="section level2">
+<h2>Creating the M-Matrix</h2>
+<p>The core step in using the IRT-M package is to map the underlying
+theoretical constructions of interest into an ‘M-Matrix’ of dimension
+loadings. In order to develop the loadings, we go through every question
+on the “test” object (here: every question in the survey) and decide
+whether the question relates to one of our hypothesized theoretical
+dimensions. For those questions that we believe load on the theoretical
+dimension of interest, we can code whether we expect it to positively
+load—meaning that an affirmative response implies more of the dimension—
+or negatively load. We code positive “loading” as <span class="math inline">\(1\)</span> in the M-Matrix, negative “loading” as
+<span class="math inline">\(-1\)</span>. We can also denote that the
+question has no relationship with the theoretical dimension of interest,
+in which case we code 0 into the dimension. If we are unsure, not coding
+the loading inserts <span class="math inline">\(NA\)</span> value, and
+the model will learn any loading during the estimation step.</p>
+<p>To begin, we reformat data so that each possible answer becomes a
+separate binary question (One Hot encoding). In preparing the data, we
+used the <code>dummy_cols()</code> utility from the
+<code>fastdummies</code> package. Finally, we rename the new binary
+dataframe as <code>Y</code> to underscore that this is the observed data
+that we will be modeling</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stats)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>dataPath <span class="ot">&lt;-</span> <span class="st">&quot;./Data/&quot;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>ebdat <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="fu">paste0</span>(dataPath,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>                         <span class="st">&quot;SI395.csv&quot;</span>))</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>ebdatsub <span class="ot">&lt;-</span> ebdat[,<span class="fu">c</span>(<span class="dv">58</span><span class="sc">:</span><span class="dv">413</span>)]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="do">## Convert numeric ordinal responses to factors</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(fastDummies)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>ebdatsub <span class="ot">&lt;-</span> <span class="fu">lapply</span>(ebdatsub[,], factor)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>ebbinary <span class="ot">&lt;-</span> <span class="fu">dummy_cols</span>(<span class="at">.data=</span>ebdatsub,</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>                       <span class="at">remove_selected_columns=</span><span class="cn">TRUE</span>)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> ebbinary <span class="do">## data</span></span></code></pre></div>
+<p>In this case, we are interested whether respondents to the 2021
+Eurobarometer reported feeling social, cultural, and/or economic
+threats. Depending on the data, you may need to do some additional
+processing at this step to ensure that each question coded is a binary
+response has a single relationship to each dimension being coded. Many
+surveys present questions formatted into feelings thermometers,
+matrices, or with many nested sub-questions. These may not load
+straightforwardly into a single dimension. For example, Question 377
+(qa1.4) in our data asks for respondents’ feelings about various current
+situations, compactly presented via a feeling thermometer for several
+sub-questions. In this example we will code the fourth, “How would you
+judge the current situation in [….] your personal job situation.” The
+respondent’s answer is coded as categorical variable ranging from 1-4,
+with a response of 1 corresponding to “Very Good” and 4 corresponding to
+“Very Bad.” We imagine that this question directly relates to the
+“economic threat” underlying dimension that we hypothesize, with the
+negative end of the scale indicating feelings of economic threat and a
+negative answer suggesting no threat.</p>
+<p>Thus, we expand the levels of the question prompt to become four
+separate yes/no questions:</p>
+<ul>
+<li>qa1a_4_1. Situation of personal job: very good.</li>
+<li>qa1a_4_2 Situation of personal job: rather good</li>
+<li>qa1a_4_3 Situation of personal job: rather bad</li>
+<li>qa1a_4_4. Situation of personal job: very bad</li>
+</ul>
+<p>Now we can use these prompts to code for our theoretical loading. In
+the M-Code matrix, we add a 1 to the column for the Economic Threat
+dimension for qa1a_4_3 and qa1a_4_4. Substantively, this means that
+responses to the qa1.4 with a value in the data of “3” or “4” are coded
+as individual respondents who likely score high on the “economic threat”
+dimension. We can also code the inverse and give qa1a_4_1 and qa1a_4_2
+the value of -1 on the M-Code matrix because we expect that
+Eurobarometer respondents who answer that they feel that their personal
+job situation is “very good” or “rather good” likely do not score highly
+on economic threat.</p>
+<p>We repeat this process for each of the questions that we think relate
+(both positively and negatively) to our underlying theoretical frames
+and, if the outcome that we are interested in comes from the data, for
+questions that relate to the DV. This step is admittedly time consuming,
+but it is what allows us to make theoretical claims about the results.
+Fortunately we only need to code questions that are related to our
+underlying dimensions of interests.</p>
+<p>Here we also highlight the ability of the IRT-M model to handle
+inductive theoretical exploration as well. As we coded the M-Matrix for
+the three dimensions of threat featured in our literature review,
+observed that the survey itself featured a number of questions about
+feelings of threat related to the ongoing Covid-19 pandemic. IRT-M
+easily supports inductive coding, and we added another dimension for the
+emergent category of “health threat.”</p>
+<p>We thus end up with a <code>K x D</code> matrix, where <code>K</code>
+is the number of theoretically-salient binarized questions and
+<code>D</code> is the total number of underlying dimensions and number
+of outcomes in the data being coded. The columns consist of the question
+codes, potentially a human-readable comment, and then a series of
+<code>{-1, 0, 1}</code> codes for whether the question relates to the
+dimension or outcome of interest.</p>
+<p>Fortunately, <code>K</code>, the number of binary questions to be
+hand coded, is likely to be substantially smaller than the overall
+number of dummy variables because we only need to code those questions
+that relate to the theory/outcome. We can ignore the rest, which will go
+into the model code as a 0. Finally, we if we want the model to impute
+unknown answers (such as did not answer/did not ask results) we can
+enter those into the <code>M-Code</code> matrix as “NA” and have the
+model impute values.</p>
+<p>For convenience, we processed the codes in a separate spreadsheet,
+which we import into the script. We also reduce the M-Matrix to include
+only rows with loading information.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>MCodes <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="fu">paste0</span>(dataPath,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                           <span class="st">&quot;Immigration_EB_MCodes.csv&quot;</span>))</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="do">## Only keep M-Codes with loadings or outcomes:</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>MCodes<span class="sc">$</span>encoding <span class="ot">&lt;-</span> <span class="fu">rowSums</span>(<span class="fu">abs</span>(MCodes[,<span class="dv">4</span><span class="sc">:</span><span class="dv">9</span>])) </span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>MCodes <span class="ot">&lt;-</span> MCodes[<span class="fu">which</span>(MCodes<span class="sc">$</span>encoding <span class="sc">&gt;</span> <span class="dv">0</span>),]</span></code></pre></div>
+</div>
+<div id="processing-with-irt-m" class="section level2">
+<h2>Processing with IRT-M</h2>
+<p>Once we have the data and M-Matrix identified (and have cleaned
+column names for consistency between M-Matrix and response data), we
+combine the data and M Matrix. We merge and the data and loadings,
+resulting in a <code>K x R</code> matrix where <code>K</code> is the
+number of binary questions that we have codes for and R are the number
+of instrument responses. This is accomplished by the following code
+snippet:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Produce a K-coded questions x R-responses data frame:</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>combine <span class="ot">&lt;-</span> MCodes[,<span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">4</span><span class="sc">:</span><span class="dv">9</span>)] <span class="sc">%&gt;%</span> <span class="do">## question codes and loadings </span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">inner_join</span>(</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        Y <span class="sc">%&gt;%</span> </span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">t</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">as.data.frame</span>(<span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">type_convert</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rownames_to_column</span>(<span class="at">var =</span> <span class="st">&quot;question&quot;</span>),</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;QMap&quot;</span> <span class="ot">=</span> <span class="st">&quot;question&quot;</span>  )</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    ) </span></code></pre></div>
+<p>Next we create the <code>M-Matrix</code> by instantiating a
+<code>K x d x d</code> array of matrices. As above, <code>K</code> is
+the number of coded loading questions, and <code>d</code> is the number
+of coded dimensions.</p>
+<p>Finally, we rebuild the outcome data by ensuring that we have coded
+(or NA) M matricies for each question that remains in our data. At the
+end, we have two data structures for our analysis: the
+<code>M-Matrix</code> which is a list of diagonal matrices of dimension
+<code>d x d x K</code> coding loadings. The second object is a
+dataframe, <code>Y</code>, that has dimension <code>R</code> responses x
+<code>K</code> questions with coded (and <code>NA</code>) loadings.
+These are the objects that <code>IRT-M</code> will use for the
+estimation</p>
+<p>The M-Code data structure becomes our model’s “M-Matrix” (M) object.
+The conversion produces a <code>dxd</code> matrix for each question that
+is 0 everywhere except for the diagonal, which is a 1 if that question
+loads on the dimension.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="dv">6</span> <span class="co">#number of coded dimensions</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>loadings <span class="ot">&lt;-</span> <span class="dv">2</span><span class="sc">:</span><span class="dv">7</span> <span class="do">## columns in combine object with the loadings</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>M <span class="ot">&lt;-</span> <span class="fu">array</span>(<span class="cn">NA</span>, <span class="fu">c</span>(d, d, <span class="fu">nrow</span>(combine)))</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(combine)) {</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    M[,,i] <span class="ot">&lt;-</span> <span class="fu">diag</span>(combine[i,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>                           loadings])</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>We also create the final <code>Y</code> object for the IRTM estimator
+to use. Namely, we reverse the transposition of the <code>Y</code>
+dataframe and ensure that we have question names that are consistently
+formatted for the constraint matricies and the observed data. Finally,
+we save the <code>Y</code> and <code>M</code> object. Troubleshooting
+note: it is important that the <code>Y</code> object is numeric. You can
+check the data types by running Dplyr’s
+<code>summary(response_object)</code> [or similar] and adjust the data
+type if needed.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Reverse the earlier transposition of the observations:</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> combine[, (d<span class="sc">+</span><span class="dv">2</span>)<span class="sc">:</span><span class="fu">ncol</span>(combine)]<span class="sc">%&gt;%</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">t</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.data.frame</span>()</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">sapply</span>(Y, as.numeric))</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="do">## Take the question names and </span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="do">## convert to column names</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>question <span class="ot">&lt;-</span> combine[,<span class="dv">1</span>] <span class="sc">%&gt;%</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.data.frame</span>() </span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(Y) <span class="ot">&lt;-</span> question[,<span class="dv">1</span>]</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="do">## Save M and Y for the sampler</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(M,</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>        <span class="at">file=</span><span class="fu">paste0</span>(dataPath,</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>                    <span class="st">&quot;EB_M.rds&quot;</span>))</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(Y,</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>        <span class="at">file=</span><span class="fu">paste0</span>(dataPath,</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>                    <span class="st">&quot;EB_Y.rds&quot;</span>))</span></code></pre></div>
+</div>
+<div id="anchors" class="section level2">
+<h2>Anchors</h2>
+<p>Adding synthetic anchor points is mathematically optional for the
+purposes of identifying the model. However, it is substantively helpful
+to provide a clear substantive interpretation and consistent scale of
+the underlying space. The anchor points create artificial extreme points
+scales the endpoints and fixes the directions of the loadings. The
+function <code>pair_gen_anchors()</code> generates these anchor points,
+taking the list of <code>M matrice</code>s and an integer value for the
+scale. The value of the integer is not important so long as it is
+positive– it simply sets the length of the scale.
+<code>pair_gen_anchors()</code> returns a set of artificial respondents
+that anchor each of the extremes of our dimensions.</p>
+<p>We finalize the anchors object by calling <code>anchors()</code>
+which takes the pairs generated by <code>pair_gen_anchors()</code> and
+the <code>Y</code> observed values object. We also create two objects to
+help us keep track of the introduced anchor points:
+<code>d_which_fix</code> and <code>d_theta_fix</code>. These record the
+index points of the synthetic extreme points that were created in
+<code>anchors()</code> and <code>pair_gen_anchors()</code></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>l2 <span class="ot">&lt;-</span> <span class="fu">pair_gen_anchors</span>(M,<span class="dv">5</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>l3 <span class="ot">&lt;-</span> <span class="fu">anchors</span>(l2, Y) </span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>d_which_fix <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(l3<span class="sc">$</span>Yfake)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>d_theta_fix <span class="ot">&lt;-</span> l2<span class="sc">$</span>theta_fake </span></code></pre></div>
+<p>##Running IRT-M</p>
+<p>Once we have the <code>M</code>, <code>Y</code>, and
+<code>anchors</code> objects we can input them into the IRT-M sampler.
+The sampler takes as additional parameters the number of dimensions
+(<code>d</code>), the identification of which points are the synthetic
+anchors, and parameters for desired burn-in and sampling iterations. We
+input these into <code>M_constrained_irt()</code>, which will return a
+list with the estimated <code>Theta</code>, <code>Lambda</code>,
+<code>b</code>, <code>Sigma</code>, and <code>Omega</code> values. `</p>
+<p>The <code>Theta</code> object gives us the estimated distribution of
+the theoretical quantities of interest. This object is a responses x
+dimensions x number of simulations list. Substantively, this gives us a
+respondent-level estimate of their distribution over each of the
+theoretical dimensions. In order to derive population-level
+distributions of the quantity of interest, we will need to first reduce
+the dimensions. For simplicity, here we take the mean, using
+<code>apply(irt$theta, c(1,2), mean)</code> to produce an object that is
+the number of respondents x a number of dimensions: what we are looking
+for!.</p>
+<p>The <code>Omega</code> object provides a covariance matrix for latent
+loadings, while the <code>Sigma</code> object is a covariance matrix for
+the latent factors. The <code>Lambda</code> object produces estimates of
+how each question loads on the underlying dimensions. The <code>b</code>
+output object is the baseline discrimination parameter for each item,
+and captures how well each item differentiates between the
+dimensions.</p>
+<p>In this example, our anchors object is <code>l3</code> , where
+<code>l3$Yall</code> is a matrix that contains both the anchor points as
+well as our actual observed data. By default, anchors() places the
+anchor points first in the matrix. It is not necessary that the anchor
+points are first as long as you note where they are, because we will
+want to remove them for the analysis.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>d<span class="ot">=</span><span class="dv">6</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>nsamp<span class="ot">=</span> <span class="dv">10</span><span class="sc">^</span><span class="dv">3</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>nburn<span class="ot">=</span><span class="dv">20</span><span class="sc">^</span><span class="dv">1</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>irt <span class="ot">&lt;-</span> <span class="fu">M_constrained_irt</span>(l3<span class="sc">$</span>Yall,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">d =</span> d,</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">M=</span> <span class="fu">abs</span>(M)<span class="sc">*</span><span class="dv">2</span>,</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">theta_fix =</span> d_theta_fix,</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">which_fix =</span> d_which_fix,</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>            <span class="at">nburn=</span>nburn,</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>            <span class="at">nsamp=</span>nsamp,</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>            <span class="at">thin=</span><span class="dv">1</span>,</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>            <span class="at">learn_Omega=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<p>The <code>IRT-M</code> sampler can also run in an unconstrained mode
+without the coded M-Matrix or the fixed anchor points. This can be a
+useful in a number of circumstances, most notably if the analyst wants
+to evaluate the impact of their coding decisions. Running an
+unconstrained IRT model is straightforward: we simply do not provide the
+sampler with an M-Matrix or anchor points. The preparation of the
+observed data (the Y data object) is the same. As before, the Y object
+is a matrix of N responses by Q questions and d is the number of
+underlying dimensions that the model is seeking.</p>
+<p>The code below will run the sampler on the formatted data (the code
+that follows has a toy burn-in and sampler runtime; a real runtime would
+be closer to 10^3- 10^4 iterations with a 2,000 burn-in).</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>d<span class="ot">=</span><span class="dv">6</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>irt.unconstrained <span class="ot">&lt;-</span> <span class="fu">M_constrained_irt</span>(<span class="at">Y=</span>Y,</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">d=</span>d,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">nburn=</span><span class="dv">100</span>, </span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">nsamp=</span><span class="dv">100</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">thin=</span><span class="dv">1</span>,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">learn_Omega=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<p>Note that the <code>Rfortran</code> dependency requires
+<code>gcc</code> to be installed on mac. Some machines running Mac OS
+encounter a well-known problem with R finding <code>gfortran</code>. The
+steps for solving this are documented online, and typically entail a
+combination of installing <code>Xcode</code>, using
+<code>homebrew</code> to install <code>gcc</code>, and/or installing
+<code>gfortran</code> directly from <code>Github</code>.</p>
+</div>
+<div id="interpretation-and-analysis" class="section level2">
+<h2>Interpretation and Analysis</h2>
+<p>Once we run the IRT-M sampler, we presumably want to</p>
+<p>One thing that we might want to do after estimating posterior
+distributions for our thetas of interest is to bring in additional
+variables from the data into our analysis. The IRT-M code itself does
+not keep unique ids for responses, however it retains the order of the
+data. This allows us to attach variables that we might want after
+deriving the <code>Theta</code> estimates.</p>
+<div id="visualizations" class="section level3">
+<h3>Visualizations:</h3>
+<p>Walk through some visualization options, based on the Eurobarometer
+codebase</p>
+</div>
+<div id="lambda" class="section level3">
+<h3>Lambda</h3>
+<p>[*Todo: here develop some code to interpret Lambda]– based on the
+Afrobarometer code</p>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
