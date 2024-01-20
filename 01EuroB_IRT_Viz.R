@@ -1,4 +1,9 @@
+## This script takes IRT-M Theta estimates
+## Produces visulizations
+
 rm(list=ls())
+
+setwd("~/Dropbox/Interventions/Eurobarometer94.3/")
 
 loadPkg=function(toLoad){
   for(lib in toLoad){
@@ -17,75 +22,21 @@ packs2 <- c("gmm", "devtools", "reshape2",
 
 loadPkg(c(packs, packs2))
 
+setwd("~/Dropbox/Interventions/Eurobarometer94.3/")
 
-library(devtools)
+load("irtm_eurobarometer943.RData")## Estimated IRT-M object
 
-## Move to the working directory where you downloaded the proto-package code:
-setwd("~/Dropbox/Research/Interventions/Theory-IRT/") ## WD for package install
+## Dataframe of demographic variables
+dataPath <- "./Data/"
+idvs <- read.csv(paste0(dataPath,
+                        "ebdatDemographVaribs.csv"))
 
-library(devtools)
-
-install.packages('IRTM',
-                 repos=NULL,
-                 type='source')
-library(IRTM)
-
-source("./IRTM-local/R/anchors.R")## Path to the local installation
-
-## Convenient to switch back to where the code and data are:
-setwd("~/Dropbox/Interventions/Eurobarometer94.3/Vignette/")
-
-dataPath <- "~/Dropbox/Interventions/Eurobarometer94.3/Data/"
-
-M <- readRDS(paste0(dataPath,
-                    "EB_M.rds"))
-
-Y <- readRDS(paste0(dataPath,
-                    "EB_Y.rds"))
-
-
-dim(Y) ### 38718 x 355
-dim(M) ## 6x6 x355
-
-## Finalize processing:
-
-l2<-pair_gen_anchors(M,5)
-l3 <- anchors(l2, Y) ## NB: Anchors creates Yall with the anchor points first
-
-d_which_fix<-1:nrow(l3$Yfake)
-d_theta_fix<-l2$theta_fake
-
-## Note: the following configuration is a toy configuration
-## It is designed for speed and illustrating the package
-## For research purposes, you need to increase the number of iterations
-
-d <- 6
-nsamp= 10^3
-nburn=20^1
-
-irt <- M_constrained_irt(Y=l3$Yall,
-                       d=d,
-                       M=abs(M)*2,
-                       theta_fix = d_theta_fix,
-                       which_fix = d_which_fix,
-                       nburn=nburn,
-                       nsamp=nsamp,
-                       thin=1,
-                       learn_Omega=TRUE)
-
-names(irt) ## theta, lambda, "b", "Sigma", "Omega"
-
-##save(irt,
-##     file="irtm_eurobarometer943.Rds")
-
-## Example analysis:
-
-## Analyze theta:
+## Analyze Thetas:
 ## create point averages and remove anchor points:
 
 avgthetas <- apply(irt$theta, c(1,2), mean)
 
-## 15k ok for vector mem, 20l not
+## Need to break length due to machine memory issues:
 avgthetas1 <- apply(irt$theta[1:15000, , ], c(1,2), mean)
 
 avgthetas2 <- apply(irt$theta[15001:30000, , ], c(1,2), mean)
@@ -96,9 +47,7 @@ avgthetas <- rbind(avgthetas1,
                    avgtheats3)
 
 dim(avgthetas)
-
 ## Removing anchor points:
-
 end.of.anchors <- dim(l2$Yfake)[1]+1
 
 avgthetas <- avgthetas[end.of.anchors:dim(avgthetas)[1],]
@@ -108,18 +57,8 @@ dim(avgthetas)
 ## Bring in some demographic DVs
 ## Country and media trust:
 
-idvs <- read.csv(paste0(dataPath,
-                        "ebdatDemographVaribs.csv"))
-
-colnames(idvs)
-
-dim(idvs)
-dim(avgthetas)
 
 thetas <- cbind(avgthetas, idvs)
-
-dim(thetas)
-head(thetas)
 
 ## rename the Theta estimates:
 colnames(thetas)[1:6] <- paste0("Theta", 1:6)
@@ -132,15 +71,13 @@ thetas$isocntry <- as.factor(thetas$isocntry)
 
 colnames(thetas)[colnames(thetas)=="qb7_2"] <- "MoreBorderControl"
 
-dim(thetas)
-head(thetas)
-
-##%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-## Some visualization examples:
-##%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 ## Plotting
-## First: Plot Thetas 
+## First: Thetas only:
+
+basedata <- melt(thetas[,1:6])
+
+colnames(basedata) <- c("Theta", "Value")
+basedata$Theta <- as.factor(basedata$Theta)
 
 
 library(ggplot2)
@@ -148,12 +85,6 @@ library(ggridges)
 library(RColorBrewer)
 library(dplyr)
 library(ggrepel)
-
-basedata <- melt(thetas[,1:6])
-
-colnames(basedata) <- c("Theta", "Value")
-basedata$Theta <- as.factor(basedata$Theta)
-
 
 gg <- ggplot(basedata,
              aes(x=Value,
@@ -167,16 +98,13 @@ gg <- ggplot(basedata,
   theme_bw()
 gg
 
-## ggsave(file="ebirtm.pdf")
+ggsave(file="ebirtm.pdf")
 
-## Example of plotting with accompanying metadata:
-## Cluster by media trust patterns:
+### Cluster by media trust patterns:
 
 dat2 <- melt(thetas[,c(1:6, 17)])
 
 colnames(dat2)[2] <- "Theta"
-head(dat2)
-
 head(dat2)
 
 gg2 <- ggplot(dat2,
@@ -195,14 +123,16 @@ gg2 <- ggplot(dat2,
 
 gg2
 
-##ggsave(gg2,
-##       file="ThetaEstByMediaTrust.pdf")
+ggsave(gg2,
+       file="ThetaEstByMediaTrust.pdf")
 
-## Another example- visualize the Thetas by political orientation
+## gg3: Thetas by political orientation
 
 dat3 <-  melt(thetas[,c(1:6, 16)])
 
 colnames(dat3)[2] <- "Theta"
+
+head(dat3)
 
 dat3$polorient <- factor(dat3$polorient,
                          levels=c("FarLeft",
@@ -228,13 +158,17 @@ gg3 <- ggplot(dat3,
 
 gg3
 
-#ggsave(gg3,
-#       file="ThetaEstByPoliticalOrientation.pdf")
+ggsave(gg3,
+       file="ThetaEstByPoliticalOrientation.pdf")
 
 
-## Visualize Thetas by social class
+## gg4: Thetas by social class
+
+colnames(thetas)
 
 dat4 <-  melt(thetas[,c(1:6, 11)])
+
+head(dat4)
 
 colnames(dat4)[2] <- "Theta"
 
@@ -265,13 +199,175 @@ gg5
 ggsave(gg5,
        file="ThetaEstBySocialClass.pdf")
 
-## Another visualization example:
-## Correlation plots between Theta1; Theta3 & Theta 5
+
+## Pairwise statistically different distributions?
+
+distCompare <- function(pairs, theta,var){
+  pairs.df <- as.data.frame(pairs)
+  pairs.df$statistic <- 0
+  pairs.df$p.value <- 0
+  pairs.df$whichtheta <- theta
+  pairs.df$var <- var
+  
+  for(r in 1:dim(pairs)[1]){
+    comps.test <- ks.test(
+      x =thetas[thetas[,var]==pairs[r,1],
+                theta],
+      y=thetas[thetas[,var]==pairs[r,2],
+               theta]
+    )
+    pairs.df[r, "statistic"] <- round(comps.test$statistic,3)
+    pairs.df[r, "p.value"] <- round(comps.test$p.value,3)    
+  }
+  return(pairs.df)
+}
+
+
+## social class
+pairs.class <- t(combn(x = levels(thetas$class),
+                       m = 2))
+
+comp.class.t1 <- distCompare(pairs.class, theta="Theta1",
+                             var="class")
+
+comp.class.t2 <- distCompare(pairs.class, theta="Theta2",
+                             var="class")
+comp.class.t3  <- distCompare(pairs.class,
+                              theta="Theta3", var="class")
+
+
+## media trust
+
+pairs.media <- t(combn(x = levels(thetas$mediatrust),
+                       m = 2))
+
+
+table(thetas$mediatrust)
+
+comp.media.t1 <- distCompare(pairs.media,
+                             theta="Theta1",
+                             var="mediatrust") 
+comp.media.t2 <- distCompare(pairs.media,
+                             theta="Theta2",
+                             var="mediatrust")
+comp.media.t3  <- distCompare(pairs.media,
+                              theta="Theta3",
+                              var="mediatrust")
+
+comp.media.t1
+comp.media.t2
+comp.media.t3
+
+## political orientation
+
+pairs.pol <- t(combn(x = levels(thetas$polorient),
+                     m = 2))
+
+
+table(thetas$polorient)
+
+comp.pol.t1 <- distCompare(pairs.pol,
+                           theta="Theta1",
+                           var="polorient") 
+comp.pol.t2 <- distCompare(pairs.pol,
+                           theta="Theta2",
+                           var="polorient")
+comp.pol.t3  <- distCompare(pairs.pol,
+                            theta="Theta3",
+                            var="polorient")
+
+comp.pol.t1
+comp.pol.t2
+comp.pol.t3
+
+## Country
+
+pairs.state <- t(combn(x = levels(thetas$isocntry),
+                       m = 2))
+
+table(thetas$isocntry)
+
+comp.state.t1 <- distCompare(pairs.state,
+                             theta="Theta1",
+                             var="isocntry") 
+comp.state.t2 <- distCompare(pairs.state,
+                             theta="Theta2",
+                             var="isocntry")
+comp.state.t3  <- distCompare(pairs.state,
+                              theta="Theta3",
+                              var="isocntry")
+
+#comp.state.t1
+#comp.state.t2
+#comp.state.t3
+
+
+comp.all <- rbind(comp.class.t1,
+                  comp.class.t2,
+                  comp.class.t3,
+                  comp.media.t1,
+                  comp.media.t2,
+                  comp.media.t3,
+                  comp.pol.t1,
+                  comp.pol.t2,
+                  comp.pol.t3,
+                  comp.state.t1,
+                  comp.state.t2,
+                  comp.state.t3)
+dim(comp.all) ##2460 x 5
+
+comp.all$name <- paste0(comp.all$V1, " - ",
+                        comp.all$V2, "-",
+                        comp.all$whichtheta)
+
+comp.all$label <- ifelse(
+  comp.all$p.value <.01 &
+    comp.all$var != "isocntry", 1,0)
+
+
+table(comp.all$label) ## 2374 no; 99 yes 
+
+comp.all[which(comp.all$label==1), "name"]
+
+comp.all$PresVar <- NA
+comp.all[which(comp.all$var=="class"),
+         "PresVar"] <- "Social Class"
+comp.all[which(comp.all$var=="isocntry"),
+         "PresVar"] <- "Survey Country"
+comp.all[which(comp.all$var=="mediatrust"),
+         "PresVar"] <- "Media Trust"
+comp.all[which(comp.all$var=="polorient"),
+         "PresVar"] <- "Politics"
+
+## Plot-- Not Actually Useful to Visualize
+## Too many overlaps
+gg.c <- ggplot(data=comp.all,
+               aes(y=statistic,
+                   x=p.value)) +
+  geom_point()+
+  geom_label_repel(aes(label=ifelse(comp.all$label==1,
+                                    as.character(comp.all$name),
+                                    '')),
+                   max.overlaps = Inf,
+                   box.padding = 0.5)+
+  ggtitle("Kolmogorov Smirnov Test Results",
+          subtitle="Paiwise Within Class, Media Trust, Political Orientation, Country Variables")+
+  facet_wrap(~PresVar, ncol=1)+
+  theme_bw()
+
+gg.c
+
+ggsave(gg.c,
+       file="kstestgraph.pdf")               
+
+
+## Correlations:
+## Between theta1; Theta3 & Theta 5
+
 
 library(Hmisc)
 library(corrplot)
 
-# Code to identify a specific covariate of interest:
 colnames(thetas)[which(
   colnames(thetas) =="d63")] <- "socialclass"
 head(thetas)
