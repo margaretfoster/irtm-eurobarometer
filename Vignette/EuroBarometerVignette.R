@@ -1,4 +1,5 @@
 rm(list=ls())
+setwd("~/Dropbox/Interventions/Eurobarometer94.3/Vignette/")
 
 loadPkg=function(toLoad){
   for(lib in toLoad){
@@ -13,39 +14,33 @@ loadPkg=function(toLoad){
 packs <- c("MCMCpack", "tmvtnorm", "truncnorm")
 
 packs2 <- c("gmm", "devtools", "reshape2",
-            "dplyr")
+            "dplyr", "tidyverse")
 
 loadPkg(c(packs, packs2))
 
-
-library(devtools)
-
-## Move to the working directory where you downloaded the proto-package code:
-setwd("~/Dropbox/Research/Interventions/Theory-IRT/") ## WD for package install
-
-library(devtools)
-
-install.packages('IRTM',
-                 repos=NULL,
-                 type='source')
 library(IRTM)
 
-source("./IRTM-local/R/anchors.R")## Path to the local installation
 
-## Convenient to switch back to where the code and data are:
-setwd("~/Dropbox/Interventions/Eurobarometer94.3/Vignette/")
+## If need a fresh IRTM package install:
+#setwd("~/Dropbox/Research/Interventions/Theory-IRT/") ## WD for package install
 
-dataPath <- "~/Dropbox/Interventions/Eurobarometer94.3/Data/"
+#install.packages('IRTM',
+#                 repos=NULL,
+#                 type='source')
+
+##source("./IRTM-local/R/anchors.R")## Path to the local installation
+
+## Switch back to the data and analysis scripts
+## Online repository:
+## https://doi.org/10.7910/DVN/FH74D9
+
+dataPath <- "./Data/"
 
 M <- readRDS(paste0(dataPath,
                     "EB_M.rds"))
 
 Y <- readRDS(paste0(dataPath,
                     "EB_Y.rds"))
-
-
-dim(Y) ### 38718 x 355
-dim(M) ## 6x6 x355
 
 ## Finalize processing:
 
@@ -60,14 +55,32 @@ d_theta_fix<-l2$theta_fake
 ## For research purposes, you need to increase the number of iterations
 
 d <- 6
-nsamp= 10^3
+nsamp= 20^3
 nburn=20^1
+
+## Quick dimension check, to save debugging time:
+
+if(dim(Y)[2] == dim(M)[3]){
+  print("length M = length Y check, passed!")
+}else(
+  print("Length Y not equal length M, check processing")
+)
+
+## Make sure M is a list of dxd matricies:
+
+if(dim(M)[1] == d &&
+   dim(M)[2]==d){
+  print("M and d dimension checks, passed!")
+}else(
+  print("M not dxd, check processing")
+)
+
+## One we have all of the elements verified, we can 
 
 irt <- M_constrained_irt(Y=l3$Yall,
                        d=d,
                        M=abs(M)*2,
                        theta_fix = d_theta_fix,
-                       which_fix = d_which_fix,
                        nburn=nburn,
                        nsamp=nsamp,
                        thin=1,
@@ -78,24 +91,14 @@ names(irt) ## theta, lambda, "b", "Sigma", "Omega"
 ##save(irt,
 ##     file="irtm_eurobarometer943.Rds")
 
+##%%%%%%%%%%%%%%%%%%%%%%%%
 ## Example analysis:
-
-## Analyze theta:
-## create point averages and remove anchor points:
+##%%%%%%%%%%%%%%%%%%%%%%%%
+## Analyze thetas
+## Generate point averages and remove anchor points:
 
 avgthetas <- apply(irt$theta, c(1,2), mean)
 
-## 15k ok for vector mem, 20l not
-avgthetas1 <- apply(irt$theta[1:15000, , ], c(1,2), mean)
-
-avgthetas2 <- apply(irt$theta[15001:30000, , ], c(1,2), mean)
-avgtheats3 <- apply(irt$theta[30001:38838, , ], c(1,2), mean)
-
-avgthetas <- rbind(avgthetas1,
-                   avgthetas2,
-                   avgtheats3)
-
-dim(avgthetas)
 
 ## Removing anchor points:
 
@@ -111,37 +114,26 @@ dim(avgthetas)
 idvs <- read.csv(paste0(dataPath,
                         "ebdatDemographVaribs.csv"))
 
-colnames(idvs)
-
-dim(idvs)
-dim(avgthetas)
-
 thetas <- cbind(avgthetas, idvs)
 
-dim(thetas)
-head(thetas)
-
-## rename the Theta estimates:
+## Rename columns for readability:
 colnames(thetas)[1:6] <- paste0("Theta", 1:6)
+colnames(thetas)[colnames(thetas)=="qb7_2"] <- "MoreBorderControl"
 
-## Make factors where important:
+## Cast into factors:
 thetas$mediatrust <- as.factor(thetas$mediatrust)
 thetas$class <- as.factor(thetas$class)
 thetas$polorient <- as.factor(thetas$polorient)
 thetas$isocntry <- as.factor(thetas$isocntry)
 
-colnames(thetas)[colnames(thetas)=="qb7_2"] <- "MoreBorderControl"
-
-dim(thetas)
 head(thetas)
 
 ##%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-## Some visualization examples:
+## Example visualizations:
 ##%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 ## Plotting
-## First: Plot Thetas 
-
+## First: Plot Thetas
 
 library(ggplot2)
 library(ggridges)
@@ -167,7 +159,8 @@ gg <- ggplot(basedata,
   theme_bw()
 gg
 
-## ggsave(file="ebirtm.pdf")
+ggsave(gg,
+       file="theta_dist.png")
 
 ## Example of plotting with accompanying metadata:
 ## Cluster by media trust patterns:
@@ -175,9 +168,6 @@ gg
 dat2 <- melt(thetas[,c(1:6, 17)])
 
 colnames(dat2)[2] <- "Theta"
-head(dat2)
-
-head(dat2)
 
 gg2 <- ggplot(dat2,
               aes(x=value,
@@ -195,197 +185,54 @@ gg2 <- ggplot(dat2,
 
 gg2
 
-##ggsave(gg2,
-##       file="ThetaEstByMediaTrust.pdf")
+ggsave(gg2,
+       file="theta_media_trust.png")
 
-## Another example- visualize the Thetas by political orientation
+####%%%%%%%%%%%%%%%%%%%%%%%
+### Lambda Analysis
+###%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+dim(irt$lambda)
+## questions x thetas x numsims/thinning
 
-dat3 <-  melt(thetas[,c(1:6, 16)])
+## Which theta do we want to analyze:
+theta_id <-  5 ## 
+## Key:
+## 1: culture threat
+## 2: immigration threat
+## 3: economic threat
+## 4: health threat
+## 5:  support immigration
+## 6: support EU
+lambda_weight <- as.data.frame(irt$lambda[,theta_id,]) %>%
+   rowwise() %>%
+   mutate(mean = mean(c_across(starts_with("V")), na.rm = TRUE),
+          variance = var(c_across(starts_with("V")), na.rm = TRUE)) %>%
+  select(mean, variance) %>%
+  ungroup() 
 
-colnames(dat3)[2] <- "Theta"
+dim(lambda_weight)
 
-dat3$polorient <- factor(dat3$polorient,
-                         levels=c("FarLeft",
-                                  "Left",
-                                  "Center",
-                                  "Right",
-                                  "FarRight",
-                                  "Refused/DNt"))
+## Connect to human-readable question
+## codes:
 
-gg3 <- ggplot(dat3,
-              aes(x=value,
-                  y=polorient,
-                  fill=polorient))+
-  geom_density_ridges(alpha=.5) +
-  ggtitle('Posterior Distribution of Group Mean',
-          subtitle= "Thetas and Outcome") +
-  labs(y="Political Orientation",
-       x= "Theta Posterior Estimates")+
-  scale_y_discrete(limits=rev(levels(dat3$polorient)))+
-  facet_wrap(~Theta, ncol=2)+
-  scale_fill_brewer(palette='Spectral') +
-  theme_bw()
+MCodes <- read_csv(paste0(dataPath,
+                          "Immigration_EB_MCodes.csv"))
 
-gg3
+## Only keep M-Codes with loadings or outcomes:
+MCodes$encoding <- rowSums(abs(MCodes[,4:9])) 
+MCodes <- MCodes[which(MCodes$encoding > 0),]
 
-#ggsave(gg3,
-#       file="ThetaEstByPoliticalOrientation.pdf")
+## Verify that the data objects have the same length:
+dim(MCodes)[1] == dim(lambda_weight)[1]
 
+t_five <- as.data.frame(cbind(question= as.character(MCodes$QMap), 
+                             substantive = as.character(MCodes$SubstantiveNotes),
+                              mean= round(as.numeric(lambda_weight$mean),3),
+                              variance= round(as.numeric(lambda_weight$variance),3),
+                              theta= theta_id)) %>%
+  arrange(desc(mean))
 
-## Visualize Thetas by social class
+head(t_five)
 
-dat4 <-  melt(thetas[,c(1:6, 11)])
-
-colnames(dat4)[2] <- "Theta"
-
-dat4$class <- factor(dat4$class,
-                     levels=c("Other/None/DN/Refused",
-                              "WorkingClass",
-                              "LowerMiddle",
-                              "MiddleClass",
-                              "UpperMiddleClass",
-                              "UpperClass"))
-
-gg5 <- ggplot(dat4,
-              aes(x=value,
-                  y=class,
-                  fill=class))+
-  geom_density_ridges(alpha=.5) +
-  ggtitle('Posterior Distribution of Group Mean',
-          subtitle= "Thetas and Outcome") +
-  labs(y="Self-Reported Social Class",
-       x= "Theta Posterior Estimates")+
-  scale_y_discrete(limits=rev(levels(dat4$class)))+
-  facet_wrap(~Theta, ncol=2)+
-  scale_fill_brewer(palette='Spectral') +
-  theme_bw()
-
-gg5
-
-ggsave(gg5,
-       file="ThetaEstBySocialClass.pdf")
-
-## Another visualization example:
-## Correlation plots between Theta1; Theta3 & Theta 5
-
-library(Hmisc)
-library(corrplot)
-
-# Code to identify a specific covariate of interest:
-colnames(thetas)[which(
-  colnames(thetas) =="d63")] <- "socialclass"
-head(thetas)
-
-cor(thetas$Theta1, thetas$Theta5)
-cor(thetas$Theta3, thetas$Theta5)
-
-colnames(thetas)
-
-corvars <- c("Theta1",
-             "Theta2",
-             "Theta3",
-             "Theta4",
-             "Theta5",
-             "Theta6",
-             "socialclass",
-             "MoreBorderControl",
-             "trusttradm",
-             "trustwebonly",
-             "trustallm",
-             "trustnom")
-
-dat <- thetas[,corvars]
-
-cors <- round(cor(dat),
-              digits = 3)
-
-cors.pvalues <- rcorr(as.matrix(dat))
-
-
-cors.pvalues
-
-## Code for color-coded
-## correlation plot from rbloggers
-
-corrplot2 <- function(data,
-                      method = "pearson",
-                      sig.level = 0.05,
-                      order = "original",
-                      diag = FALSE,
-                      type = "upper",
-                      tl.srt = 90,
-                      number.font = 1,
-                      number.cex = 1,
-                      mar = c(0, 0, 0, 0)) {
-  library(corrplot)
-  data_incomplete <- data
-  data <- data[complete.cases(data), ]
-  mat <- cor(data, method = method)
-  cor.mtest <- function(mat, method) {
-    mat <- as.matrix(mat)
-    n <- ncol(mat)
-    p.mat <- matrix(NA, n, n)
-    diag(p.mat) <- 0
-    for (i in 1:(n - 1)) {
-      for (j in (i + 1):n) {
-        tmp <- cor.test(mat[, i], mat[, j], method = method)
-        p.mat[i, j] <- p.mat[j, i] <- tmp$p.value
-      }
-    }
-    colnames(p.mat) <- rownames(p.mat) <- colnames(mat)
-    p.mat
-  }
-  p.mat <- cor.mtest(data, method = method)
-  col <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
-  corrplot(mat,
-           method = "color", col = col(200), number.font = number.font,
-           mar = mar, number.cex = number.cex,
-           type = type, order = order,
-           addCoef.col = "black", # add correlation coefficient
-           tl.col = "black", tl.srt = tl.srt, # rotation of text labels
-           # combine with significance level
-           p.mat = p.mat, sig.level = sig.level, insig = "blank",
-           # hide correlation coefficiens on the diagonal
-           diag = diag
-  )
-}
-
-
-
-## Need to reset the "high" values of social class
-## because they're NA/don't know/won't tel/
-## Dropping for this
-head(dat)
-
-colnames(dat)[7:12] <- c("S.Class",
-                         "MoreBorderCont",
-                         "MediaTrustTradOnly",
-                         "MediaTrustWebOnly",
-                         "MediaTrustAll",
-                         "MediaTrustNone")
-
-## Drop small # of misleading values:
-
-dat[which(dat$S.Class > 5),
-    "S.Class"] <-NA
-dat[which(dat$MoreBorderCont > 2),
-    "MoreBorderCont"] <- NA
-
-table(thetas$socialclass)
-table(dat$S.Class)
-table(dat$MoreBorderCont) ## 1= for; 2=against
-
-head(dat)
-
-pdf(file="corMatrix.pdf")
-corrplot2(
-  data = dat,
-  method = "pearson",
-  sig.level = 0.05,
-  order = "original",
-  diag = FALSE,
-  type = "upper",
-  tl.srt = 75
-)
-dev.off()
 
